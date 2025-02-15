@@ -3,8 +3,8 @@ package ecs
 import "core:fmt"
 import rl "vendor:raylib"
 
-width: i32 : 600
-height: i32 : 600
+width: i32 : 500
+height: i32 : 500
 velocity: f32 : 1.0
 line_size: i32 : 2
 fline_size: f32 : f32(line_size)
@@ -175,41 +175,19 @@ get_winner :: proc(w: i8) -> cstring {
 	}
 }
 
+restart_system :: proc(world: ^World) {
+	if (rl.GetKeyPressed() == rl.KeyboardKey.SPACE) {
+		world^ = init_world()
+	}
+}
+
 main :: proc() {
-	players: [MAX_PLAYERS]PlayerComponent = {
-		PlayerComponent {
-			color = rl.GREEN,
-			controls = {
-				left = rl.KeyboardKey.H,
-				right = rl.KeyboardKey.L,
-				up = rl.KeyboardKey.K,
-				down = rl.KeyboardKey.J,
-			},
-		},
-		PlayerComponent {
-			color = rl.BLUE,
-			controls = {
-				left = rl.KeyboardKey.A,
-				right = rl.KeyboardKey.D,
-				up = rl.KeyboardKey.W,
-				down = rl.KeyboardKey.S,
-			},
-		},
-	}
-	p1_pos := PositionComponent{{1.0, f32(middle_of_screen)}, Direction.RIGHT}
-	p2_pos := PositionComponent{{f32(width) - 1.0, f32(middle_of_screen)}, Direction.LEFT}
-	world := World {
-		grid      = GridComponent{},
-		positions = {p1_pos, p2_pos},
-		game      = GameComponent.PLAYING,
-		players   = players,
-	}
+	world := init_world()
 
 	rl.InitWindow(width, height, "Tron")
 	defer rl.CloseWindow()
 
 	rl.SetTargetFPS(60)
-
 
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
@@ -230,6 +208,7 @@ main :: proc() {
 			text := get_winner(world.winner)
 			offset := rl.MeasureText(text, font_size) / 2
 			rl.DrawText(text, middle_of_screen - offset, middle_of_screen, font_size, rl.WHITE)
+			restart_system(&world)
 		}
 	}
 }
