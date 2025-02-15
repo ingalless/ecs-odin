@@ -6,6 +6,8 @@ A super duper simple 2-player Tron Lightcycle game. Used as an excuse to write s
 
 ## Controls
 
+Restart the game by pressing `SPACE`
+
 ### Player 1
 
 Uses VIM keybindings:
