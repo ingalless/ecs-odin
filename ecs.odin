@@ -133,12 +133,14 @@ is_oob :: proc(bounds: [2]i32, pos: rl.Vector2) -> bool {
 
 update_game_system :: proc(
 	game: ^GameComponent,
+	winner: ^i8,
 	grid: GridComponent,
 	positions: [MAX_PLAYERS]PositionComponent,
 ) {
 	for position, i in positions {
 		if is_oob({height, width}, position.pos) {
 			game^ = GameComponent.END
+			winner^ = i == 0 ? 1 : 0
 			return
 		}
 
@@ -147,11 +149,29 @@ update_game_system :: proc(
 		case .P1:
 			fmt.println("PLAYER COLLISION", i, position.pos, tile_to_move_into)
 			game^ = GameComponent.END
+			if i == 0 {
+				winner^ = 1
+			} else {
+				winner^ = 0
+			}
 		case .P2:
 			fmt.println("PLAYER COLLISION", i, position.pos, tile_to_move_into)
 			game^ = GameComponent.END
+			if i == 0 {
+				winner^ = 1
+			} else {
+				winner^ = 0
+			}
 		case .EMPTY:
 		}
+	}
+}
+
+get_winner :: proc(w: i8) -> cstring {
+	if w == 0 {
+		return "Winner: Player 1!"
+	} else {
+		return "Winner: Player 2!"
 	}
 }
 
@@ -177,7 +197,7 @@ main :: proc() {
 		},
 	}
 	p1_pos := PositionComponent{{1.0, f32(middle_of_screen)}, Direction.RIGHT}
-	p2_pos := PositionComponent{{f32(width) - 20.0, f32(middle_of_screen)}, Direction.LEFT}
+	p2_pos := PositionComponent{{f32(width) - 1.0, f32(middle_of_screen)}, Direction.LEFT}
 	world := World {
 		grid      = GridComponent{},
 		positions = {p1_pos, p2_pos},
@@ -203,12 +223,13 @@ main :: proc() {
 		case .PLAYING:
 			grid_system(&world.grid, world.positions)
 			position_system(world.players, &world.positions)
-			update_game_system(&world.game, world.grid, world.positions)
+			update_game_system(&world.game, &world.winner, world.grid, world.positions)
 			render_system(world.grid, world.players, world.positions)
 		case .END:
 			rl.ClearBackground(rl.BLACK)
-			offset := rl.MeasureText("Loser!", font_size) / 2
-			rl.DrawText("Loser!", middle_of_screen - offset, middle_of_screen, font_size, rl.WHITE)
+			text := get_winner(world.winner)
+			offset := rl.MeasureText(text, font_size) / 2
+			rl.DrawText(text, middle_of_screen - offset, middle_of_screen, font_size, rl.WHITE)
 		}
 	}
 }

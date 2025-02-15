@@ -10,6 +10,7 @@ World :: struct {
 	game:      GameComponent,
 	positions: [MAX_PLAYERS]PositionComponent,
 	players:   [MAX_PLAYERS]PlayerComponent,
+	winner:    i8,
 }
 
 // init_world :: proc() -> World {
